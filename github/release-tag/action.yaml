@@ -1,15 +1,20 @@
 name: "Release tag"
-description: "Determines what the next release version should be by examining git tags. Assumes tags take the form of `v\\d+`. This action does not require a full clone of repository history"
+description: "Determines what the next release version should be by examining git
+  tags. Assumes tags take the form of `v\\d+`. This action does not require a clone
+  of the repository"
 inputs:
   owner:
-    description: Owner of the repository
+    description: Owner of repository
     required: true
+    default: ${{ github.event.repository.owner.login }}
   repo:
-    description: Repository to examine
+    description: Github repository
     required: true
-  token:
+    default: ${{ github.event.repository.name }}
+  github-token:
     description: Github token to use
-    required: true
+    required: false
+    default: ${{ github.token }}
 outputs:
   next:
     description: "The next release version"
@@ -17,7 +22,6 @@ outputs:
   current:
     description: "The current release, can be empty"
     value: ${{ steps.current.outputs.current }}
-
 runs:
   using: "composite"
   steps:
@@ -26,12 +30,12 @@ runs:
       env:
         OWNER: ${{ inputs.owner }}
         REPO: ${{ inputs.repo }}
-        GH_TOKEN: ${{ inputs.token }}
+        GH_TOKEN: ${{ inputs.github-token }}
       run: |
         #@begin=bash@
         CURRENT_VERSION=$(gh api \
           -H "Accept: application/vnd.github+json" \
-          -H "X-GitHub-Api-Version: 2022-1 1-28" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
           "/repos/${OWNER}/${REPO}/git/matching-refs/tags" | \
         jq -r '.[] | select(.object.type == "commit" and (.ref | test("^refs/tags/v[0-9]+$"))) | .ref' | \
         tail -n1 | \
@@ -40,9 +44,10 @@ runs:
         #@end=bash@
     - id: next
       shell: bash
-      run: |
+      env:
+        CURRENT_VERSION: ${{ steps.current.outputs.current }}
+      run: |-
         #@begin=bash@
-        CURRENT_VERSION="${{ steps.current.outputs.current }}"
         if [ -z "${CURRENT_VERSION}" ]; then
           echo "next=v1" >> $GITHUB_OUTPUT
           exit 0

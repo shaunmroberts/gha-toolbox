@@ -1,7 +1,7 @@
 name: "Create release"
 description: "Creates a github release and generates release notes based on provided tags"
 inputs:
-  tag:
+  release-tag:
     description: "Tag to create release from"
     required: true
   previous-tag:
@@ -9,12 +9,25 @@ inputs:
     required: false
   prerelease:
     description: "Set to true to create as prerelease"
-    required: true
-    default: "false"
-  token:
-    description: "Token to use to create release"
     required: false
+    default: "false"
+  github-token:
+    description: "Github token to use to create release"
+    required: true
+    default: ${{ github.token }}
+  owner:
+    description: Owner of repository
+    required: true
+    default: ${{ github.event.repository.owner.login }}
+  repo:
+    description: Github repository
+    required: true
+    default: ${{ github.event.repository.name }}
 
+outputs:
+  release-id:
+    value: ${{ steps.create.outputs.id }}
+    description: Github release id
 
 runs:
   using: "composite"
@@ -22,14 +35,16 @@ runs:
     - id: create
       uses: actions/github-script@v6
       env:
-        RELEASE_TAG: ${{ inputs.tag }}
+        RELEASE_TAG: ${{ inputs.release-tag }}
         PREVIOUS_TAG: ${{ inputs.previous-tag }}
         PRERELEAE: ${{ inputs.prerelease }}
+        OWNER: ${{ inputs.owner }
+        REPO: ${{ inputs.repo }
       with:
-        github-token: ${{ inputs.token }}
+        github-token: ${{ inputs.github-token }}
         script: |
           //@begin=js@
-          const {RELEASE_TAG, PREVIOUS_TAG, PRERELEAE } = process.env
+          const {RELEASE_TAG, PREVIOUS_TAG, PRERELEAE, OWNER, REPO } = process.env
           const releaseNotes = await github.rest.repos.generateReleaseNotes({
               repo: context.repo.repo,
               owner: context.repo.owner,
@@ -40,10 +55,10 @@ runs:
           const isPrerelease = PRERELEAE.toLowerCase() == "true"
 
           const release = await github.rest.repos.createRelease({
-              repo: context.repo.repo,
-              owner: context.repo.owner,
+              repo: REPO,
+              owner: OWNER,
               tag_name: nextVersion,
-              name: nextVersion,
+              name: RELEASE_TAG,
               body: releaseNotes.data.body,
               draft: false,
               prerelease: isPrerelease,
