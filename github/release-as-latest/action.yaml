@@ -4,24 +4,36 @@ inputs:
   release-id:
     description: Github release id
     required: true
+  owner:
+    description: Owner of repository
+    required: true
+    default: ${{ github.event.repository.owner.login }}
+  repo:
+    description: Github repository
+    required: true
+    default: ${{ github.event.repository.name }}
   github-token:
     description: Github token to use
     required: false
+    default: ${{ github.token }}
 
 runs:
   using: "composite"
   steps:
     - uses: actions/github-script@v6
       env:
+        OWNER: ${{ inputs.owner }}
+        REPO: ${{ inputs.repo }}
         RELEASE_ID: ${{ inputs.release-id }}
       with:
         github-token: ${{ inputs.github-token }}
         script: |
           //@begin=js@
+          const {OWNER, REPO, RELEASE_TAG} = process.env;
           await github.rest.repos.updateRelease({
-              repo: context.repo.repo,
-              owner: context.repo.owner,
-              release_id: process.env.RELEASE_ID,
+              repo: REPO,
+              owner: OWNER,
+              release_id: RELEASE_ID,
               draft: false,
               prerelease: false,
               make_latest: true,
