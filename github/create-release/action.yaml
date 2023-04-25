@@ -38,8 +38,8 @@ runs:
         RELEASE_TAG: ${{ inputs.release-tag }}
         PREVIOUS_TAG: ${{ inputs.previous-tag }}
         PRERELEAE: ${{ inputs.prerelease }}
-        OWNER: ${{ inputs.owner }
-        REPO: ${{ inputs.repo }
+        OWNER: ${{ inputs.owner }}
+        REPO: ${{ inputs.repo }}
       with:
         github-token: ${{ inputs.github-token }}
         script: |
