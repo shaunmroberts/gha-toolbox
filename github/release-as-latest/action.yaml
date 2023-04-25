@@ -1,0 +1,29 @@
+name: "Mark release as latest"
+description: "Marks a release as latest"
+inputs:
+  release-id:
+    description: Github release id
+    required: true
+  github-token:
+    description: Github token to use
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/github-script@v6
+      env:
+        RELEASE_ID: ${{ inputs.release-id }}
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          //@begin=js@
+          await github.rest.repos.updateRelease({
+              repo: context.repo.repo,
+              owner: context.repo.owner,
+              release_id: process.env.RELEASE_ID,
+              draft: false,
+              prerelease: false,
+              make_latest: true,
+          });
+          //@end=js@

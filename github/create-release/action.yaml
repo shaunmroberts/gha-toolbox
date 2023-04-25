@@ -1,0 +1,53 @@
+name: "Create release"
+description: "Creates a github release and generates release notes based on provided tags"
+inputs:
+  tag:
+    description: "Tag to create release from"
+    required: true
+  previous-tag:
+    description: "Previous release tag, if available"
+    required: false
+  prerelease:
+    description: "Set to true to create as prerelease"
+    required: true
+    default: "false"
+  token:
+    description: "Token to use to create release"
+    required: false
+
+
+runs:
+  using: "composite"
+  steps:
+    - id: create
+      uses: actions/github-script@v6
+      env:
+        RELEASE_TAG: ${{ inputs.tag }}
+        PREVIOUS_TAG: ${{ inputs.previous-tag }}
+        PRERELEAE: ${{ inputs.prerelease }}
+      with:
+        github-token: ${{ inputs.token }}
+        script: |
+          //@begin=js@
+          const {RELEASE_TAG, PREVIOUS_TAG, PRERELEAE } = process.env
+          const releaseNotes = await github.rest.repos.generateReleaseNotes({
+              repo: context.repo.repo,
+              owner: context.repo.owner,
+              tag_name: RELEASE_TAG,
+              previous_tag_name: PREVIOUS_TAG
+          });
+
+          const isPrerelease = PRERELEAE.toLowerCase() == "true"
+
+          const release = await github.rest.repos.createRelease({
+              repo: context.repo.repo,
+              owner: context.repo.owner,
+              tag_name: nextVersion,
+              name: nextVersion,
+              body: releaseNotes.data.body,
+              draft: false,
+              prerelease: isPrerelease,
+          });
+
+          core.setOutput("id", release.data.id);
+          //@end=js@

@@ -1,0 +1,53 @@
+name: "Release tag"
+description: "Determines what the next release version should be by examining git tags. Assumes tags take the form of `v\\d+`. This action does not require a full clone of repository history"
+inputs:
+  owner:
+    description: Owner of the repository
+    required: true
+  repo:
+    description: Repository to examine
+    required: true
+  token:
+    description: Github token to use
+    required: true
+outputs:
+  next:
+    description: "The next release version"
+    value: ${{ steps.next.outputs.next }}
+  current:
+    description: "The current release, can be empty"
+    value: ${{ steps.current.outputs.current }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: current
+      shell: bash
+      env:
+        OWNER: ${{ inputs.owner }}
+        REPO: ${{ inputs.repo }}
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        #@begin=bash@
+        CURRENT_VERSION=$(gh api \
+          -H "Accept: application/vnd.github+json" \
+          -H "X-GitHub-Api-Version: 2022-1 1-28" \
+          "/repos/${OWNER}/${REPO}/git/matching-refs/tags" | \
+        jq -r '.[] | select(.object.type == "commit" and (.ref | test("^refs/tags/v[0-9]+$"))) | .ref' | \
+        tail -n1 | \
+        sed 's|refs/tags/||g')
+        echo "current=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
+        #@end=bash@
+    - id: next
+      shell: bash
+      run: |
+        #@begin=bash@
+        CURRENT_VERSION="${{ steps.current.outputs.current }}"
+        if [ -z "${CURRENT_VERSION}" ]; then
+          echo "next=v1" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        # otherwise we need our very good friend awk
+        NEXT_VERSION=$(echo "$CURRENT_VERSION" | awk -Fv -v OFS=v '{$NF +=1 ; print }')
+        echo "next=${NEXT_VERSION}" >> $GITHUB_OUTPUT
+        #@end=bash@
