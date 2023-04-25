@@ -46,8 +46,8 @@ runs:
           //@begin=js@
           const {RELEASE_TAG, PREVIOUS_TAG, PRERELEAE, OWNER, REPO } = process.env
           const releaseNotes = await github.rest.repos.generateReleaseNotes({
-              repo: context.repo.repo,
-              owner: context.repo.owner,
+              repo: REPO,
+              owner: OWNER,
               tag_name: RELEASE_TAG,
               previous_tag_name: PREVIOUS_TAG
           });
@@ -57,7 +57,7 @@ runs:
           const release = await github.rest.repos.createRelease({
               repo: REPO,
               owner: OWNER,
-              tag_name: nextVersion,
+              tag_name: RELEASE_TAG,
               name: RELEASE_TAG,
               body: releaseNotes.data.body,
               draft: false,
