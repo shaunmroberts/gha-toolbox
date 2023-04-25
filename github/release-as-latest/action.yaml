@@ -29,7 +29,7 @@ runs:
         github-token: ${{ inputs.github-token }}
         script: |
           //@begin=js@
-          const {OWNER, REPO, RELEASE_TAG} = process.env;
+          const {OWNER, REPO, RELEASE_ID} = process.env;
           await github.rest.repos.updateRelease({
               repo: REPO,
               owner: OWNER,
