@@ -11,6 +11,9 @@ inputs:
     description: Github repository
     required: true
     default: ${{ github.event.repository.name }}
+  create-tag:
+    default: "false"
+    description: "If true, then creates the release tag as well"
   github-token:
     description: Github token to use
     required: false
@@ -56,3 +59,21 @@ runs:
         NEXT_VERSION=$(echo "$CURRENT_VERSION" | awk -Fv -v OFS=v '{$NF +=1 ; print }')
         echo "next=${NEXT_VERSION}" >> $GITHUB_OUTPUT
         #@end=bash@
+    - id: create
+      if: ${{ inputs.create-tag == "true" }}
+      uses: actions/github-script@v6
+      env:
+        OWNER: ${{ inputs.owner }}
+        REPO: ${{ inputs.repo }}
+        TAG: ${{ steps.next.outputs.next }}
+      with:
+        script: |
+          //@begin=js@
+          const {OWNER, REPO, TAG} = process.env
+          github.rest.git.createRef({
+            owner: OWNER,
+            repo: REPO,
+            ref: `refs/tags/${TAG}`,
+            sha: context.sha
+          })
+          //@end=js@
