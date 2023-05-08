@@ -1,5 +1,5 @@
-name: "Mark release as latest"
-description: "Marks a release as latest"
+name: "Finalize release"
+description: "Moves a release out of draft/prerelease"
 inputs:
   release-id:
     description: Github release id
@@ -12,6 +12,10 @@ inputs:
     description: Github repository
     required: true
     default: ${{ github.event.repository.name }}
+  is-latest:
+    description: If release should be marked as latest
+    required: true
+    default: "true"
   github-token:
     description: Github token to use
     required: false
@@ -25,17 +29,18 @@ runs:
         OWNER: ${{ inputs.owner }}
         REPO: ${{ inputs.repo }}
         RELEASE_ID: ${{ inputs.release-id }}
+        IS_LATEST: ${{ inputs.is-latest }}
       with:
         github-token: ${{ inputs.github-token }}
         script: |
           //@begin=js@
-          const {OWNER, REPO, RELEASE_ID} = process.env;
+          const {OWNER, REPO, RELEASE_ID, IS_LATEST} = process.env;
           await github.rest.repos.updateRelease({
               repo: REPO,
               owner: OWNER,
               release_id: RELEASE_ID,
               draft: false,
               prerelease: false,
-              make_latest: true,
+              make_latest: IS_LATEST.toLowerCase() == "true",
           });
           //@end=js@
