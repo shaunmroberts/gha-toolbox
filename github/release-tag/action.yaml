@@ -14,6 +14,9 @@ inputs:
   create-tag:
     default: "false"
     description: "If true, then creates the release tag as well"
+  tag-prefix:
+    required: false
+    description: "Optional path style prefix for tag"
   github-token:
     description: Github token to use
     required: false
@@ -33,14 +36,21 @@ runs:
       env:
         OWNER: ${{ inputs.owner }}
         REPO: ${{ inputs.repo }}
+        PREFIX: ${{ inputs.tag-prefix }}
         GH_TOKEN: ${{ inputs.github-token }}
       run: |
         #@begin=bash@
+        if [ ! -z "${PREFIX}" ] && [[ "${PREFIX}" != */ ]]; then
+          PREFIX="${PREFIX}/"
+        fi
+
+        TAG_FILTER="^refs/tags/${PREFIX}v[0-9]+$"
+
         CURRENT_VERSION=$(gh api \
           -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
           "/repos/${OWNER}/${REPO}/git/matching-refs/tags" | \
-        jq -r '.[] | select(.object.type == "commit" and (.ref | test("^refs/tags/v[0-9]+$"))) | .ref' | \
+        jq --arg FILTER "${TAG_FILTER}" -r '.[] | select(.object.type == "commit" and (.ref | test($FILTER))) | .ref' | \
         tail -n1 | \
         sed 's|refs/tags/||g')
         echo "current=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
@@ -49,14 +59,19 @@ runs:
       shell: bash
       env:
         CURRENT_VERSION: ${{ steps.current.outputs.current }}
+        PREFIX: ${{ inputs.tag-prefix }}
       run: |-
         #@begin=bash@
+        if [ ! -z "${PREFIX}" ] && [[ "${PREFIX}" != */ ]]; then
+          PREFIX="${PREFIX}/"
+        fi
+
         if [ -z "${CURRENT_VERSION}" ]; then
-          echo "next=v1" >> $GITHUB_OUTPUT
+          echo "next=${PREFIX}v1" >> $GITHUB_OUTPUT
           exit 0
         fi
         # otherwise we need our very good friend awk
-        NEXT_VERSION=$(echo "$CURRENT_VERSION" | awk -Fv -v OFS=v '{$NF +=1 ; print }')
+        NEXT_VERSION=$(echo "$CURRENT_VERSION" | awk -F"${PREFIX}v" -v OFS="${PREFIX}v" '{$NF +=1 ; print }')
         echo "next=${NEXT_VERSION}" >> $GITHUB_OUTPUT
         #@end=bash@
     - id: create
