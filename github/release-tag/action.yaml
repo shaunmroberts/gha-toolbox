@@ -60,7 +60,7 @@ runs:
         echo "next=${NEXT_VERSION}" >> $GITHUB_OUTPUT
         #@end=bash@
     - id: create
-      if: ${{ inputs.create-tag == "true" }}
+      if: ${{ inputs.create-tag == 'true' }}
       uses: actions/github-script@v6
       env:
         OWNER: ${{ inputs.owner }}
