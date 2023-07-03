@@ -1,0 +1,43 @@
+name: 'Extract codeblocks'
+description: 'Extracts the specified codeblocks from the provided markdown'
+inputs:
+  content:
+    required: true
+    description: Markdown to extract codeblocks from
+  marker:
+    required: true
+    description: Codeblock marker to extract
+  separator:
+    required: false
+    description: Used to separate multiple blocks, default is a new line
+
+outputs:
+  extracted:
+    description: All codeblocks that match the provided marker
+    value: ${{ steps.codedown.outputs.extracted }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: "16.x"
+    - name: Install dependencies - Get Pull Request Information
+      run: npm install --location=global codedown
+      shell: bash
+    - id: codedown
+      shell: bash
+      run: |
+        #@begin=bash@
+        EXTRACTED=$( echo "${CONTENT}" | codedown "${MARKER}" "${SEPARATOR}")
+        EOF=$(uuidgen)
+        echo "${EXTRACTED}"
+        echo "extracted<<${EOF}" >> $GITHUB_OUTPUT
+        echo "${EXTRACTED}" >> $GITHUB_OUTPUT
+        echo "${EOF}" >> $GITHUB_OUTPUT
+        #@end=bash@
+      env:
+        CONTENT: ${{ inputs.content }}
+        MARKER: ${{ inputs.marker }}
+        SEPARATOR: ${{ inputs.separator }}
