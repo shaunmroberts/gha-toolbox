@@ -40,7 +40,7 @@ def main() -> None:
         log_index_config = create_config_from_dict(
             LogIndexConfig,
             env,
-            prefix=f"{ENVVARPREFIX}opensearch_",
+            prefix=f"{ENVVARPREFIX}OPENSEARCH_",
         )
         validate_config(log_index_config)
         log_index_config.index = f"{log_index_config.index}-{date.today().isoformat()}"
@@ -320,25 +320,25 @@ def process_logs_with(*processors):
 
 def build_cli_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        epilog=f"The environment variables '{ENVVARPREFIX}opensearch_PASSWORD' and '{ENVVARPREFIX}GITHUB_TOKEN' must also be set in order for logs to be retrieved and shipped"
+        epilog=f"The environment variables '{ENVVARPREFIX}OPENSEARCH_PASSWORD' and '{ENVVARPREFIX}GITHUB_TOKEN' must also be set in order for logs to be retrieved and shipped"
     )
     parser.add_argument(
         "--host",
-        dest=f"{ENVVARPREFIX}opensearch_HOST",
-        help=f"HOST:PORT for the opensearch server, default is localhost:9200. This can be set via the envvar '{ENVVARPREFIX}opensearch_HOST'",
+        dest=f"{ENVVARPREFIX}OPENSEARCH_HOST",
+        help=f"HOST:PORT for the opensearch server, default is localhost:9200. This can be set via the envvar '{ENVVARPREFIX}OPENSEARCH_HOST'",
         default="localhost:9200",
         metavar="HOST:PORT",
     )
     parser.add_argument(
         "--user",
-        dest=f"{ENVVARPREFIX}opensearch_USER",
-        help=f"Username to access the opensearch server with. This can be set via the envvar '{ENVVARPREFIX}opensearch_USER'",
+        dest=f"{ENVVARPREFIX}OPENSEARCH_USER",
+        help=f"Username to access the opensearch server with. This can be set via the envvar '{ENVVARPREFIX}OPENSEARCH_USER'",
         metavar="USER",
     )
     parser.add_argument(
         "--index",
-        dest=f"{ENVVARPREFIX}opensearch_INDEX",
-        help=f"Index to write logs to, will be suffixed with '-$TODAY'. This can be set via the envvar '{ENVVARPREFIX}opensearch_INDEX'",
+        dest=f"{ENVVARPREFIX}OPENSEARCH_INDEX",
+        help=f"Index to write logs to, will be suffixed with '-$TODAY'. This can be set via the envvar '{ENVVARPREFIX}OPENSEARCH_INDEX'",
         metavar="INDEX",
     )
 
