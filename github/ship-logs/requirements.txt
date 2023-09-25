@@ -1,0 +1,4 @@
+python-dateutil
+requests
+opensearch-py
+python-json-logger
