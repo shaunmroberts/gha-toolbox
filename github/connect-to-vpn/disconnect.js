@@ -18,4 +18,4 @@ function run(cmd) {
     });
 }
 
-run("sh ./disconnect.sh");
+run("sh ./github/connect-to-vpn/disconnect.sh");
