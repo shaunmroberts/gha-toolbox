@@ -1,0 +1,14 @@
+name: 'Connect To VPN'
+description: 'Connects to the Tonic VPN'
+inputs:
+    vpn_config:
+        required: true
+        description: 'The contents of your ovpn file'
+    dev_pem:
+        required: true
+        description: 'The contents of the dev.pem ssh key'
+
+runs:
+    using: 'node20'
+    main: 'connect.js'
+    post: 'disconnect.js'
