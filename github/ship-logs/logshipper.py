@@ -82,8 +82,8 @@ def main() -> None:
                     client=log_index,
                     actions=job_logs,
                 )
-            except Exception:
-                print(f"::error::Failed to ship some logs for {job_name}")
+            except Exception as e:
+                print(f"::error::Failed to ship some logs for {job_name}: {e}")
     except KeyboardInterrupt:
         print("::notice::Log shipping requested to stop early")
         sys.exit(1)
