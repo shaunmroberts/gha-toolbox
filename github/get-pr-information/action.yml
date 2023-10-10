@@ -1,0 +1,21 @@
+name: 'Get Pull Request Information'
+description: 'Finds the pull request based on the branch name and returns the pr id'
+inputs:
+  repo-token:
+    required: true
+    description: 'The GITHUB_TOKEN secret'
+  branch_name:
+    required: true
+    description: 'The branch name the PR is based on'
+outputs:
+    pr_number:
+        description: 'The id of the pull request.'
+    draft:
+        description: 'A boolean that represents if the PR is in draft or not.'
+    state:
+        description: 'State of this Pull Request. Either open or closed.'
+    pr_description:
+        description: 'The body of the Pull Request.'
+runs:
+  using: 'node20'
+  main: 'index.js'

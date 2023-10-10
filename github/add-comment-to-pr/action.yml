@@ -1,0 +1,16 @@
+name: 'Add Comment To PR'
+description: 'Add Comment To PR'
+inputs:
+  repo-token:
+    required: true
+    description: 'The GITHUB_TOKEN secret'
+  pr-numbers:
+      required: true
+      description: 'A space delimited list of pull request ids'
+  comment-text:
+      required: true
+      description: 'The comment you wish to add to the pull requests'
+
+runs:
+  using: 'node20'
+  main: 'index.js'
