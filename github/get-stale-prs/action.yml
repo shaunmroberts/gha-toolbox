@@ -1,0 +1,13 @@
+name: 'Get Stale Pull Requests'
+description: 'Finds the open pull requests with no activity in the last 7 days'
+inputs:
+    repo-token:
+        required: true
+        description: 'The GITHUB_TOKEN secret'
+outputs:
+    stale_pr_numbers:
+        description: 'The space delimited list of ids from stale pull requests'
+
+runs:
+    using: 'node16'
+    main: 'index.js'
